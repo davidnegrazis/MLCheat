@@ -216,6 +216,18 @@ class Game:
         print("Pool size:")
         print(str(self.pool_size()))
 
+        cards_placed = cur_player.play(cur_type)
+        self.pool.extend(cards_placed)
+
+        # determine next player, next type to play
+        self.current_type_index += 1
+        if self.current_type_index > self.max_card_value:
+            self.current_type_index = 0
+        self.player_index_to_play += 1
+        if self.player_index_to_play == self.num_players:
+            self.player_index_to_play = 0
+
+        print("\n")
 
 suits = ["Spade", "Club", "Heart", "Diamond"]
 types = [
