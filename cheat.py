@@ -88,7 +88,7 @@ class Game:
         self.pool = []
         self.current_card_type_index = 0
         self.max_card_type = 13
-        self.players_index_to_play = 0
+        self.player_index_to_play = 0
 
         while True:
             try:
@@ -120,12 +120,11 @@ class Game:
 
         self.deck = Deck(self.suits, self.values)
 
-    def get_player_name(self, player_id):
-        for Player in self.players:
-            if Player.get_id() == player_id:
-                return Player.get_name()
+    def get_player(self, player_index):
+        return self.players[player_index]
 
-        return ""
+    def get_type(self, type_index):
+        return self.values[type_index]
 
     def deal(self):
         players_index = 0
@@ -139,10 +138,10 @@ class Game:
             players_index += 1
 
     def current_type_to_play(self, current_card_type_index):
-        return self.values[current_card_type_index]
+        return self.get_type(current_card_type_index)
 
-    def current_player_to_play(self, players_index_to_play):
-        return self.players[self.players_index_to_play]
+    def current_player_to_play(self, player_index_to_play):
+        return self.get_player(player_index_to_play)
 
     def round(self):
         print("Current card type to play:")
@@ -150,7 +149,7 @@ class Game:
         print("---")
         print("Player to place cards:")
         print(
-            self.current_player_to_play(self.players_index_to_play).get_name()
+            self.get_player(self.player_index_to_play).get_name()
         )
 
 
