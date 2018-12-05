@@ -143,6 +143,9 @@ class Game:
     def current_player_to_play(self, player_index_to_play):
         return self.get_player(player_index_to_play)
 
+    def pool_size(self):
+        return len(self.pool)
+
     def round(self):
         print("Current card type to play:")
         print(self.current_type_to_play(self.current_card_type_index))
@@ -151,6 +154,9 @@ class Game:
         print(
             self.get_player(self.player_index_to_play).get_name()
         )
+        print("---")
+        print("Pool size:")
+        print(str(self.pool_size()))
 
 
 suits = ["Spade", "Club", "Heart", "Diamond"]
