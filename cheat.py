@@ -74,7 +74,7 @@ class Deck(Cards):
     def __init__(self, suits, types):
         Cards.__init__(self, suits, types)
 
-        for i in range(13):
+        for i in range(len(self.types)):
             for suit in self.suits:
                 self.add_card(Card(suit, self.types[i], i + 1))
 
