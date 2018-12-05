@@ -229,8 +229,19 @@ class Game:
 
         print("\n")
 
+    def play_game(self):
+        self.deal()
+        while(True):
+            self.round()
+            if (self.pool_size() == 52):
+                break
+
+
 suits = ["Spade", "Club", "Heart", "Diamond"]
 types = [
     "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen",
     "King"
 ]
+
+g = Game(suits, types)
+g.play_game()
