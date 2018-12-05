@@ -97,7 +97,7 @@ class Game:
                 ))
             except ValueError:
                 print("Must be an integer.")
-                break
+                continue
 
             if not 2 <= self.num_players <= 8:
                 print("min 2, max 7")
