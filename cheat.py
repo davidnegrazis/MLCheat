@@ -121,8 +121,8 @@ class Game:
         self.players = []
         self.num_players = 0
         self.pool = []
-        self.current_card_type_index = 0
-        self.max_card_type = 13
+        self.current_type_index = 0
+        self.max_card_value = len(types) - 1
         self.player_index_to_play = 0
 
         while True:
@@ -172,8 +172,8 @@ class Game:
             self.players[players_index].add_card_to_hand(self.deck.pop_card())
             players_index += 1
 
-    def current_type_to_play(self, current_card_type_index):
-        return self.get_type(current_card_type_index)
+    def current_type_to_play(self, current_type_index):
+        return self.get_type(current_type_index)
 
     def current_player_to_play(self, player_index_to_play):
         return self.get_player(player_index_to_play)
@@ -182,13 +182,18 @@ class Game:
         return len(self.pool)
 
     def round(self):
+        cur_player = self.get_player(self.player_index_to_play)
+        cur_type = self.current_type_to_play(self.current_type_index)
+
         print("Current card type to play:")
-        print(self.current_type_to_play(self.current_card_type_index))
+        print(cur_type)
         print("---")
         print("Player to place cards:")
-        print(
-            self.get_player(self.player_index_to_play).get_name()
-        )
+        print(cur_player.get_name())
+
+        if cur_player == self.player_id:
+            print("(It's your turn.)")
+
         print("---")
         print("Pool size:")
         print(str(self.pool_size()))
