@@ -124,6 +124,7 @@ class Game:
         self.current_type_index = 0
         self.max_card_value = len(types) - 1
         self.player_index_to_play = 0
+        name = ""
 
         while True:
             try:
@@ -141,12 +142,29 @@ class Game:
                 self.num_players += 1
                 break
 
-        self.player_id = random.randint(0, self.num_players - 1)
+        # get player name
+        while True:
+            try:
+                name = str(input("Enter your name!\n> "))
+            except ValueError:
+                print("Must be a string.")
+                continue
+
+            if name == "":
+                print("Enter a name.")
+                continue
+            else:
+                break
+
+        if name == "no lol":
+            self.player_id = -1
+        else:
+            self.player_id = random.randint(0, self.num_players - 1)
 
         for i in range(self.num_players):
             if i == self.player_id:
                 self.players.append(Human(
-                    "player", i, self.suits, self.types
+                    name, i, self.suits, self.types
                 ))
             else:
                 self.players.append(Bot(
