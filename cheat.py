@@ -23,7 +23,7 @@ class Cards:
     def num_cards(self):
         return len(self.cards)
 
-    def shuffle(self):
+    def __shuffle__(self):
         random.shuffle(self.cards)
 
     def pop_card(self):
@@ -128,7 +128,7 @@ class Game:
 
     def deal(self):
         players_index = 0
-        self.deck.shuffle()
+        self.deck.__shuffle__()
 
         for i in range(self.deck.num_cards()):
             if players_index > self.num_players - 1:
