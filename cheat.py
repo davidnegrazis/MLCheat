@@ -35,6 +35,12 @@ class Cards:
         for Card in self.cards:
             print(Card.__str__())
 
+    def show_cards_with_indices(self):
+        i = 0
+        for Card in self.cards:
+            print(str(i) + ": " + Card.__str__())
+            i += 1
+
 
 class Hand(Cards):
     def __init__(self, suits, types):
@@ -46,6 +52,8 @@ class Player:
         self.name = name
         self.id = id
         self.hand = Hand(suits, types)
+        self.suits = suits
+        self.types = types
 
     def get_name(self):
         return self.name
@@ -59,15 +67,42 @@ class Player:
     def add_card_to_hand(self, Card):
         self.hand.add_card(Card)
 
+    def play(self, current_type_index):
+        pass
 
 class Human(Player):
     def __init__(self, name, id, suits, types):
         Player.__init__(self, name, id, suits, types)
 
+    def play(self, current_type_index):
+        print("--- My cards ---")
+        self.hand.show_cards_with_indices()
+        print("----------------")
+        index_to_play = 0
+
+        while True:
+            try:
+                index_to_play = int(input("Enter which card to play\n> "))
+            except ValueError:
+                print("Must be an integer.")
+                continue
+
+            if not 0 <= index_to_play <= self.hand.num_cards() - 1:
+                print("Invalid index.")
+                continue
+            else:
+                break
+
+        return [self.hand.pop_card(index_to_play)]
+
 
 class Bot(Player):
     def __init__(self, name, id, suits, types):
         Player.__init__(self, name, id, suits, types)
+
+    def play(self, current_type_index):
+        print("A bot is gonna play! " + self.name)
+        return [self.hand.pop_card()]
 
 
 class Deck(Cards):
