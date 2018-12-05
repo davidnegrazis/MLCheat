@@ -26,8 +26,8 @@ class Cards:
     def __shuffle__(self):
         random.shuffle(self.cards)
 
-    def pop_card(self):
-        Card = self.cards.pop()
+    def pop_card(self, where=-1):
+        Card = self.cards.pop(where)
 
         return Card
 
