@@ -12,9 +12,9 @@ class Card:
 
 
 class Cards:
-    def __init__(self, suits, values):
+    def __init__(self, suits, types):
         self.suits = suits
-        self.values = values
+        self.types = types
         self.cards = []
 
     def add_card(self, Card):
@@ -37,15 +37,15 @@ class Cards:
 
 
 class Hand(Cards):
-    def __init__(self, suits, values):
-        Cards.__init__(self, suits, values)
+    def __init__(self, suits, types):
+        Cards.__init__(self, suits, types)
 
 
 class Player:
-    def __init__(self, name, id, suits, values):
+    def __init__(self, name, id, suits, types):
         self.name = name
         self.id = id
-        self.hand = Hand(suits, values)
+        self.hand = Hand(suits, types)
 
     def get_name(self):
         return self.name
@@ -61,28 +61,28 @@ class Player:
 
 
 class Human(Player):
-    def __init__(self, name, id, suits, values):
-        Player.__init__(self, name, id, suits, values)
+    def __init__(self, name, id, suits, types):
+        Player.__init__(self, name, id, suits, types)
 
 
 class Bot(Player):
-    def __init__(self, name, id, suits, values):
-        Player.__init__(self, name, id, suits, values)
+    def __init__(self, name, id, suits, types):
+        Player.__init__(self, name, id, suits, types)
 
 
 class Deck(Cards):
-    def __init__(self, suits, values):
-        Cards.__init__(self, suits, values)
+    def __init__(self, suits, types):
+        Cards.__init__(self, suits, types)
 
         for i in range(13):
             for suit in self.suits:
-                self.add_card(Card(suit, self.values[i], i + 1))
+                self.add_card(Card(suit, self.types[i], i + 1))
 
 
 class Game:
-    def __init__(self, suits, values):
+    def __init__(self, suits, types):
         self.suits = suits
-        self.values = values
+        self.types = types
         self.players = []
         self.num_players = 0
         self.pool = []
@@ -111,20 +111,20 @@ class Game:
         for i in range(self.num_players):
             if i == self.player_id:
                 self.players.append(Human(
-                    "player", i, self.suits, self.values
+                    "player", i, self.suits, self.types
                 ))
             else:
                 self.players.append(Bot(
-                    "bot " + str(i), i, self.suits, self.values
+                    "bot " + str(i), i, self.suits, self.types
                 ))
 
-        self.deck = Deck(self.suits, self.values)
+        self.deck = Deck(self.suits, self.types)
 
     def get_player(self, player_index):
         return self.players[player_index]
 
     def get_type(self, type_index):
-        return self.values[type_index]
+        return self.types[type_index]
 
     def deal(self):
         players_index = 0
@@ -154,7 +154,7 @@ class Game:
 
 
 suits = ["Spade", "Club", "Heart", "Diamond"]
-values = [
+types = [
     "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen",
     "King"
 ]
