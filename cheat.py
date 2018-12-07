@@ -339,21 +339,9 @@ class Game:
     def round(self):
         cur_player = self.get_player(self.player_index_to_play)
         cur_type = self.current_type_to_play(self.current_type_index)
-
-        print("Current card type to play:")
-        print(cur_type)
-        print("---")
-        print("Player to place cards:")
-        print(cur_player.get_name())
-
-        if cur_player == self.player_id:
-            print("(It's your turn.)")
-
-        print("---")
-        print("Pool size:")
-        print(str(self.pool_size()))
-
         cards_placed = cur_player.play(cur_type)
+
+        self.display_round_info(cur_player, cur_type)
 
         # add cards to pool
         for i in cards_placed:
@@ -369,6 +357,21 @@ class Game:
             self.player_index_to_play = 0
 
         print("\n")
+
+    def display_round_info(self, cur_player, cur_type):
+        print("Current card type to play:")
+        print(cur_type)
+        print("---")
+        print("Player to place cards:")
+        print(cur_player.get_name())
+
+        if cur_player == self.player_id:
+            print("(It's your turn.)")
+
+        print("---")
+        print("Pool size:")
+        print(str(self.pool_size()))
+
 
     def play_game(self):
         self.deal()
