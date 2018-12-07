@@ -132,8 +132,6 @@ class Human(Player):
         Player.__init__(self, name, id, suits, types)
 
     def play(self, current_type_index):
-        self.show_instructions()
-
         cmd = ""
         queue = []
 
