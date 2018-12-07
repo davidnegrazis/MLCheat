@@ -10,13 +10,16 @@ def represents_int(s):
 
 
 class Card:
-    def __init__(self, suit, name, value):
+    def __init__(self, suit, _type, value):
         self.suit = suit
-        self.name = name
+        self.type = _type
         self.value = value
 
     def __str__(self):
-        return self.name + " of " + self.suit + "s"
+        return self.type + " of " + self.suit + "s"
+
+    def get_type(self):
+        return self.type
 
 
 class Cards:
@@ -25,6 +28,13 @@ class Cards:
 
     def add_card(self, Card):
         self.cards.append(Card)
+
+    def add_cards(self, Cards):
+        for i in range(0, Cards.num_cards()):
+            self.add_card(Cards.get_card(i))
+
+    def clear(self):
+        self.cards.clear()
 
     def get_card(self, i):
         return self.cards[i]
@@ -120,12 +130,16 @@ class Player:
     def add_card_to_hand(self, Card):
         self.hand.add_card(Card)
 
+    def give_cards(self, Cards):
+        self.hand.add_cards(Cards)
+
     def num_cards(self):
         return self.hand.num_cards()
 
     def play(self, current_type_index):
         pass
 
+    # returns bool for decision
     def call_cheat(self, current_type_index, pool_size):
         pass
 
@@ -164,7 +178,7 @@ class Human(Player):
 
             # verify input
             valid_cmd = True
-            special_cmds = ["-1", "cheat", "clear", "undo", "done"]
+            special_cmds = ["clear", "undo", "done"]
             for p in cmd:
                 if not (p in special_cmds and len(cmd) == 1):
                     if not represents_int(p):
@@ -178,9 +192,6 @@ class Human(Player):
                         )
 
                         valid_cmd = False
-                    elif p == -1 and len(cmd) > 1:
-                        print("Can't call cheat while placing cards")
-                        valid_cmd = False
                     elif int(p) in queue:
                         print(
                             "You're already going to place the card " +
@@ -192,9 +203,7 @@ class Human(Player):
                             break
                 else:
                     special = cmd[0]
-                    if special == "-1" or special == "cheat":
-                        print("LOL CHEAT")
-                    elif special == "clear":
+                    if special == "clear":
                         queue = []
                     elif special == "done":
                         if len(queue) == 0:
@@ -228,8 +237,16 @@ class Human(Player):
         print("To clear selection, enter 'clear'")
         print("----------------")
 
-    def call_cheat(self, current_type_index):
-        pass
+    def call_cheat(self, current_type_index, pool_size=None):
+        inp = ""
+        while(True):
+            inp = input("Call cheat? (y / n) > ")
+            if inp == "y":
+                return True
+            elif inp == "n":
+                return False
+            else:
+                print("Options: y / n")
 
 
 class Bot(Player):
@@ -238,6 +255,9 @@ class Bot(Player):
 
     def play(self, current_type_index):
         return [0]
+
+    def call_cheat(self, current_type_index, pool_size):
+        return False
 
 
 class Deck(Cards):
@@ -342,8 +362,8 @@ class Game:
             self.players[players_index].add_card_to_hand(self.deck.pop_card())
             players_index += 1
 
-    def current_type_to_play(self, current_type_index):
-        return self.get_type(current_type_index)
+    def current_type_to_play(self):
+        return self.get_type(self.current_type_index)
 
     def current_player_to_play(self, player_index_to_play):
         return self.get_player(player_index_to_play)
@@ -353,7 +373,7 @@ class Game:
 
     def round(self):
         cur_player = self.get_player(self.player_index_to_play)
-        cur_type = self.current_type_to_play(self.current_type_index)
+        cur_type = self.current_type_to_play()
 
         if self.show_outputs:
             self.display_round_info(cur_player, cur_type)
@@ -366,16 +386,7 @@ class Game:
             self.pool.add_card(cur_player.get_hand().get_card(int(i)))
         cur_player.get_hand().filter_cards(cards_placed)
 
-        # if player has no more cards, add them to winners list
-        if self.get_player(self.player_index_to_play).num_cards() == 0:
-            self.winners.append(self.player_index_to_play)
-
-        # determine next player, next type to play
-        self.current_type_index += 1
-        if self.current_type_index > self.max_card_value:
-            self.current_type_index = 0
-        self.player_index_to_play = self.next_player(self.player_index_to_play,
-                                                     self.player_index_to_play)
+        return len(cards_placed)
 
     # get the next player index to play that's not a winner. -1 if none
     def next_player(self, start, cur):
@@ -409,7 +420,72 @@ class Game:
     def play_game(self):
         self.deal()
         while(True):
-            self.round()
+            num_placed = self.round()
+
+            # check cheat
+            accusers = []
+            c = 0
+            for P in self.players:
+                if (
+                    c not in self.winners and
+                    not c == self.player_index_to_play
+                ):
+                    if P.call_cheat(self.current_type_index, self.pool_size()):
+                        accusers.append(c)
+
+                c += 1
+
+            if len(accusers) > 0:
+                accuser = accusers[0]
+                # check last num_placed cards to see if they were valid
+                cheated = False
+                for i in range(
+                    self.pool_size() - num_placed, self.pool_size()
+                ):
+                    if not (self.pool.get_card(i).get_type ==
+                            self.current_type_to_play()):
+                        cheated = True
+                        break
+
+                P = None
+                msg = ""
+                if cheated:
+                    P = self.get_player(self.player_index_to_play)
+                    msg += P.get_name() + " cheated!"
+                else:
+                    P = self.get_player(accuser)
+                    msg += (
+                        P.get_name() + " incorrectly accused " +
+                        self.get_player(self.player_index_to_play).get_name()
+                    )
+
+                print(msg)
+                print("Here were the placed cards:")
+                # show the placed cards
+                self.pool.show_cards(
+                    False,
+                    None,
+                    list(range(
+                        self.pool_size() - num_placed,
+                        self.pool_size())
+                    )
+                )
+                P.give_cards(self.pool)
+                self.pool.clear()
+
+            # if player has no more cards, add them to winners list
+            if self.get_player(self.player_index_to_play).num_cards() == 0:
+                self.winners.append(self.player_index_to_play)
+
+            # determine next player, next type to play
+            self.current_type_index += 1
+            if self.current_type_index > self.max_card_value:
+                self.current_type_index = 0
+
+            next_player_index = self.next_player(self.player_index_to_play,
+                                                 self.player_index_to_play)
+            self.player_index_to_play = next_player_index
+
             if self.player_index_to_play == -1:
                 break
 
@@ -426,5 +502,5 @@ types = [
     "King"
 ]
 
-g = Game(suits, types, True)
+g = Game(suits, types)
 g.play_game()
