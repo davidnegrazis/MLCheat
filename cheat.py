@@ -40,7 +40,7 @@ class Cards:
     def get_card(self, i):
         return self.cards[i]
 
-    def get_combos(self, n=-1):
+    def get_combos(self, n=-1, remove_empties=False):
         if n == -1:
             n = self.num_cards()
 
@@ -50,6 +50,9 @@ class Cards:
         for L in range(0, n):
             for subset in itertools.combinations(indices, L):
                 combos.append(list(subset))
+
+        if remove_empties:
+            combos.pop(0)
 
         return combos
 
@@ -268,7 +271,7 @@ class Bot(Player):
         Player.__init__(self, name, id, suits, types)
 
     def play(self, current_type_index):
-        return random.choice(self.hand.get_combos(4))
+        return random.choice(self.hand.get_combos(4, True))
 
     def call_cheat(self, current_type_index, pool_size):
         return random.choice([True, False])
