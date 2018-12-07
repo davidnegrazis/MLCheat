@@ -234,7 +234,6 @@ class Bot(Player):
         Player.__init__(self, name, id, suits, types)
 
     def play(self, current_type_index):
-        print("A bot is gonna play! " + self.name)
         return [0]
 
 
@@ -251,7 +250,8 @@ class Deck(Cards):
 
 class Game:
     def __init__(
-        self, suits, types, Simulate=False, num_players=0, min_p=3, max_p=8
+        self, suits, types, Simulate=False, show_outputs=True, num_players=0,
+        min_p=3, max_p=8,
     ):
         self.suits = suits
         self.types = types
@@ -264,6 +264,7 @@ class Game:
         self.max_card_value = len(types) - 1
         self.player_index_to_play = 0
         self.player_id = -1  # the Human player
+        self.show_outputs = show_outputs
 
         name = ""
         while True:
@@ -351,7 +352,9 @@ class Game:
         cur_type = self.current_type_to_play(self.current_type_index)
         cards_placed = cur_player.play(cur_type)
 
-        self.display_round_info(cur_player, cur_type)
+        if self.show_outputs:
+            self.display_round_info(cur_player, cur_type)
+            print("")
 
         # add cards to pool
         for i in cards_placed:
@@ -365,8 +368,6 @@ class Game:
         self.player_index_to_play += 1
         if self.player_index_to_play == self.num_players:
             self.player_index_to_play = 0
-
-        print("\n")
 
     def display_round_info(self, cur_player, cur_type):
         print("Current card type to play:")
