@@ -354,11 +354,12 @@ class Game:
     def round(self):
         cur_player = self.get_player(self.player_index_to_play)
         cur_type = self.current_type_to_play(self.current_type_index)
-        cards_placed = cur_player.play(cur_type)
 
         if self.show_outputs:
             self.display_round_info(cur_player, cur_type)
             print("")
+
+        cards_placed = cur_player.play(cur_type)
 
         # add cards to pool
         for i in cards_placed:
