@@ -257,13 +257,21 @@ class Human(Player):
     def call_cheat(self, current_type_index, pool_size=None):
         inp = ""
         while(True):
-            inp = input("Call cheat? (y / n) > ")
+            inp = input("Call cheat? (y / n / s / ?) > ")
             if inp == "y":
                 return True
             elif inp == "n":
                 return False
+            elif inp == "s":
+                self.hand.show_cards()
+            elif inp == "?":
+                print("y: call cheat\nn: continue\ns: see my hand")
+                print(
+                    "(calling cheat accuses the player of placing at least " +
+                    "one card that doesn't match the current type)"
+                )
             else:
-                print("Options: y / n")
+                print("Options: y / n / s / ?")
 
 
 class Bot(Player):
@@ -382,28 +390,40 @@ class Game:
     def current_type_to_play(self):
         return self.get_type(self.current_type_index)
 
-    def current_player_to_play(self, player_index_to_play):
-        return self.get_player(player_index_to_play)
+    def current_player_to_play(self):
+        return self.get_player(self.player_index_to_play)
 
     def pool_size(self):
         return self.pool.num_cards()
 
     def round(self):
-        cur_player = self.get_player(self.player_index_to_play)
+        cur_player = self.current_player_to_play()
         cur_type = self.current_type_to_play()
 
         if self.show_outputs:
             self.display_round_info(cur_player, cur_type)
-            print("")
 
         cards_placed = cur_player.play(cur_type)
+        num_placed = len(cards_placed)
+
+        if self.show_outputs:
+            print("\n~~~~~")
+            print(
+                cur_player.get_name() + " placed " + str(num_placed) +
+                " cards"
+            )
+            print(
+                "The pool now has " + str(self.pool_size() + num_placed) +
+                " cards"
+            )
+            print("~~~~~\n")
 
         # add cards to pool
         for i in cards_placed:
             self.pool.add_card(cur_player.get_hand().get_card(int(i)))
         cur_player.get_hand().filter_cards(cards_placed)
 
-        return len(cards_placed)
+        return num_placed
 
     # get the next player index to play that's not a winner. -1 if none
     def next_player(self, start, cur):
@@ -421,6 +441,10 @@ class Game:
         return self.next_player(start, cur)
 
     def display_round_info(self, cur_player, cur_type):
+        print("\n")
+        for i in range(0, 30):
+            print("#", end="")
+        print("")
         print("Current card type to play:")
         print(cur_type)
         print("---")
@@ -433,6 +457,10 @@ class Game:
         print("---")
         print("Pool size:")
         print(str(self.pool_size()))
+
+        for i in range(0, 30):
+            print("#", end="")
+        print("")
 
     def play_game(self):
         self.deal()
@@ -454,6 +482,17 @@ class Game:
 
             if len(accusers) > 0:
                 accuser = accusers[0]
+                receiver = accuser
+
+                if self.show_outputs:
+                    print("\n^^^^")
+                    print(
+                        self.get_player(accuser).get_name() +
+                        " called cheat on " +
+                        self.current_player_to_play().get_name()
+                    )
+                    print("^^^^\n")
+
                 # check last num_placed cards to see if they were valid
                 cheated = False
                 for i in range(
@@ -462,36 +501,45 @@ class Game:
                     if not (self.pool.get_card(i).get_type() ==
                             self.current_type_to_play()):
                         cheated = True
+                        receiver = self.player_index_to_play
                         break
 
                 P = None
                 msg = ""
                 if cheated:
-                    P = self.get_player(self.player_index_to_play)
+                    P = self.current_player_to_play()
                     msg += P.get_name() + " cheated!"
                 else:
                     P = self.get_player(accuser)
                     msg += (
                         P.get_name() + " incorrectly accused " +
-                        self.get_player(self.player_index_to_play).get_name()
+                        self.current_player_to_play().get_name()
                     )
 
-                print(msg)
-                print("Here were the placed cards:")
-                # show the placed cards
-                self.pool.show_cards(
-                    False,
-                    None,
-                    list(range(
-                        self.pool_size() - num_placed,
-                        self.pool_size())
+                if self.show_outputs:
+                    print(msg)
+                    print("Here were the placed cards:")
+                    # show the placed cards
+                    self.pool.show_cards(
+                        False,
+                        None,
+                        list(range(
+                            self.pool_size() - num_placed,
+                            self.pool_size())
+                        )
                     )
-                )
+
+                    print(
+                        self.get_player(receiver).get_name() +
+                        " has to pick up all " + str(self.pool_size()) +
+                        " cards from the pool!"
+                    )
+
                 P.give_cards(self.pool)
                 self.pool.clear()
 
             # if player has no more cards, add them to winners list
-            if self.get_player(self.player_index_to_play).num_cards() == 0:
+            if self.current_player_to_play().num_cards() == 0:
                 self.winners.append(self.player_index_to_play)
 
             # determine next player, next type to play
@@ -507,7 +555,7 @@ class Game:
                 break
 
         if self.show_outputs:
-            print("~~~ Winners ~~~")
+            print("\n\n~~~ Winners ~~~")
             c = 1
             for i in self.winners:
                 print(str(c) + "  " + self.get_player(i).get_name())
@@ -520,5 +568,5 @@ types = [
     "King"
 ]
 
-g = Game(suits, types)
+g = Game(suits, types, True, False, 5)
 g.play_game()
