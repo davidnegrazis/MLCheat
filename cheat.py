@@ -456,7 +456,7 @@ class Game:
                 for i in range(
                     self.pool_size() - num_placed, self.pool_size()
                 ):
-                    if not (self.pool.get_card(i).get_type ==
+                    if not (self.pool.get_card(i).get_type() ==
                             self.current_type_to_play()):
                         cheated = True
                         break
