@@ -1,4 +1,5 @@
 import random
+import itertools
 
 
 def represents_int(s):
@@ -38,6 +39,19 @@ class Cards:
 
     def get_card(self, i):
         return self.cards[i]
+
+    def get_combos(self, n=-1):
+        if n == -1:
+            n = self.num_cards()
+
+        indices = range(0, self.num_cards())
+        combos = []
+
+        for L in range(0, n):
+            for subset in itertools.combinations(indices, L):
+                combos.append(list(subset))
+
+        return combos
 
     def num_cards(self):
         return len(self.cards)
@@ -254,10 +268,10 @@ class Bot(Player):
         Player.__init__(self, name, id, suits, types)
 
     def play(self, current_type_index):
-        return [0]
+        return random.choice(self.hand.get_combos(4))
 
     def call_cheat(self, current_type_index, pool_size):
-        return False
+        return random.choice([True, False])
 
 
 class Deck(Cards):
@@ -291,8 +305,8 @@ class Game:
         self.winners = []
 
         name = ""
-        while True:
-            if num_players == 0:
+        if num_players == 0:
+            while True:
                 inp_msg = (
                     "Enter number of players. "
                     "(min " + str(self.min_players) + ", max " +
@@ -489,11 +503,12 @@ class Game:
             if self.player_index_to_play == -1:
                 break
 
-        print("~~~ Winners ~~~")
-        c = 1
-        for i in self.winners:
-            print(str(c) + "  " + self.get_player(i).get_name())
-            c += 1
+        if self.show_outputs:
+            print("~~~ Winners ~~~")
+            c = 1
+            for i in self.winners:
+                print(str(c) + "  " + self.get_player(i).get_name())
+                c += 1
 
 
 suits = ["Spade", "Club", "Heart", "Diamond"]
