@@ -120,6 +120,9 @@ class Player:
     def add_card_to_hand(self, Card):
         self.hand.add_card(Card)
 
+    def num_cards(self):
+        return self.hand.num_cards()
+
     def play(self, current_type_index):
         pass
 
@@ -265,6 +268,7 @@ class Game:
         self.player_index_to_play = 0
         self.player_id = -1  # the Human player
         self.show_outputs = show_outputs
+        self.winners = []
 
         name = ""
         while True:
@@ -361,13 +365,31 @@ class Game:
             self.pool.add_card(cur_player.get_hand().get_card(int(i)))
         cur_player.get_hand().filter_cards(cards_placed)
 
+        # if player has no more cards, add them to winners list
+        if self.get_player(self.player_index_to_play).num_cards() == 0:
+            self.winners.append(self.player_index_to_play)
+
         # determine next player, next type to play
         self.current_type_index += 1
         if self.current_type_index > self.max_card_value:
             self.current_type_index = 0
-        self.player_index_to_play += 1
-        if self.player_index_to_play == self.num_players:
-            self.player_index_to_play = 0
+        self.player_index_to_play = self.next_player(self.player_index_to_play,
+                                                     self.player_index_to_play)
+
+    # get the next player index to play that's not a winner. -1 if none
+    def next_player(self, start, cur):
+        cur += 1
+        if cur == self.num_players:
+            cur = 0
+
+        # base case
+        if cur == start:
+            return -1
+
+        if cur not in self.winners:
+            return cur
+
+        return self.next_player(start, cur)
 
     def display_round_info(self, cur_player, cur_type):
         print("Current card type to play:")
@@ -387,8 +409,14 @@ class Game:
         self.deal()
         while(True):
             self.round()
-            if (self.pool_size() == 52):
+            if self.player_index_to_play == -1:
                 break
+
+        print("~~~ Winners ~~~")
+        c = 1
+        for i in self.winners:
+            print(str(c) + "  " + self.get_player(i).get_name())
+            c += 1
 
 
 suits = ["Spade", "Club", "Heart", "Diamond"]
