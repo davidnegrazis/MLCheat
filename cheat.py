@@ -1,6 +1,14 @@
 import random
 
 
+def represents_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 class Card:
     def __init__(self, suit, name, value):
         self.suit = suit
@@ -12,13 +20,14 @@ class Card:
 
 
 class Cards:
-    def __init__(self, suits, types):
-        self.suits = suits
-        self.types = types
+    def __init__(self):
         self.cards = []
 
     def add_card(self, Card):
         self.cards.append(Card)
+
+    def get_card(self, i):
+        return self.cards[i]
 
     def num_cards(self):
         return len(self.cards)
@@ -31,27 +40,71 @@ class Cards:
 
         return Card
 
-    def show_cards(self):
-        for Card in self.cards:
-            print(Card.__str__())
-
-    def show_cards_with_indices(self):
+    def filter_cards(self, indices):
+        new_cards = []
         i = 0
         for Card in self.cards:
-            print(str(i) + ": " + Card.__str__())
+            if i not in indices:
+                new_cards.append(Card)
             i += 1
+
+        self.cards = new_cards
+
+    def get_card_string(self, i):
+        return self.cards[i].__str__()
+
+    def show_cards(
+        self, show_indices=False, ignore=None, only=None, per_line=4
+    ):
+        to_show = []
+
+        if (only is None):
+            to_show = list(range(0, self.num_cards()))
+        else:
+            to_show = only
+        if ignore is not None:
+            to_show = [x for x in to_show if x not in ignore]
+
+        length = len(to_show)
+        if length > 0:
+            data = []
+            row = []
+            last_i = to_show[-1]
+
+            counter = 0
+            for i in to_show:
+                string = ""
+
+                if show_indices:
+                    string += "[" + str(i) + "] "
+
+                string += self.get_card_string(i)
+                row.append(string)
+
+                if counter == per_line - 1:
+                    data.append(row)
+                    row = []
+                    counter = 0
+                else:
+                    counter += 1
+                    if i == last_i:
+                        data.append(row)
+
+            col_width = max(len(word) for row in data for word in row) + 2
+            for row in data:
+                print("".join(word.ljust(col_width) for word in row))
 
 
 class Hand(Cards):
-    def __init__(self, suits, types):
-        Cards.__init__(self, suits, types)
+    def __init__(self):
+        Cards.__init__(self)
 
 
 class Player:
     def __init__(self, name, id, suits, types):
         self.name = name
         self.id = id
-        self.hand = Hand(suits, types)
+        self.hand = Hand()
         self.suits = suits
         self.types = types
 
@@ -70,30 +123,112 @@ class Player:
     def play(self, current_type_index):
         pass
 
+    def call_cheat(self, current_type_index, pool_size):
+        pass
+
+
 class Human(Player):
     def __init__(self, name, id, suits, types):
         Player.__init__(self, name, id, suits, types)
 
     def play(self, current_type_index):
-        print("--- My cards ---")
-        self.hand.show_cards_with_indices()
-        print("----------------")
-        index_to_play = 0
+        self.show_instructions()
+
+        cmd = ""
+        queue = []
 
         while True:
-            try:
-                index_to_play = int(input("Enter which card to play\n> "))
-            except ValueError:
-                print("Must be an integer.")
+            print("--- Available cards to play ---")
+            self.hand.show_cards(True, queue)
+            print("--- My selection ---")
+            self.hand.show_cards(False, None, queue)
+            print("--------------------")
+
+            cmd = input("Enter a command or type ? for help\n> ")
+
+            if (cmd == "?"):
+                self.show_instructions()
                 continue
 
-            if not 0 <= index_to_play <= self.hand.num_cards() - 1:
-                print("Invalid index.")
-                continue
-            else:
-                break
+            # remove duplicates
+            cmd = cmd.strip(",").split(",")
+            no_dups = []
+            for c in cmd:
+                if c not in no_dups:
+                    no_dups.append(c)
+            cmd = no_dups
 
-        return [self.hand.pop_card(index_to_play)]
+            if len(cmd) == 0:
+                continue
+
+            # verify input
+            valid_cmd = True
+            special_cmds = ["-1", "cheat", "clear", "undo", "done"]
+            for p in cmd:
+                if not (p in special_cmds and len(cmd) == 1):
+                    if not represents_int(p):
+                        print("Expected only integers separated by commas")
+                        print("Got: " + p)
+
+                        valid_cmd = False
+                    elif not 0 <= int(p) <= self.hand.num_cards():
+                        print(
+                            "No card numbered " + p + " exists in your hand"
+                        )
+
+                        valid_cmd = False
+                    elif p == -1 and len(cmd) > 1:
+                        print("Can't call cheat while placing cards")
+                        valid_cmd = False
+                    elif int(p) in queue:
+                        print(
+                            "You're already going to place the card " +
+                            "numbered " + p
+                        )
+                        valid_cmd = False
+
+                    if not valid_cmd:
+                            break
+                else:
+                    special = cmd[0]
+                    if special == "-1" or special == "cheat":
+                        print("LOL CHEAT")
+                    elif special == "clear":
+                        queue = []
+                    elif special == "done":
+                        if len(queue) == 0:
+                            print("You haven't entered anything to play yet")
+                        else:
+                            return queue
+                    elif special == "undo":
+                        queue.pop()
+
+                    valid_cmd = False
+                    break
+
+            if not valid_cmd:
+                continue
+
+            cmd = [int(x) for x in cmd]
+            queue.extend(cmd)
+
+    def show_instructions(self):
+        print("--- Commands ---")
+        print("To select a card, enter the number you see before it")
+        print(
+            "To enter multiple cards at once, separate card numbers with a " +
+            "comma"
+        )
+        print("~~~")
+        print("To call cheat, enter -1")
+        print("~~~")
+        print("To undo most recent card placement, enter 'undo'")
+        print("~~~")
+        print("To clear selection, enter 'clear'")
+        print("----------------")
+
+    def call_cheat(self, current_type_index):
+        pass
 
 
 class Bot(Player):
@@ -102,12 +237,14 @@ class Bot(Player):
 
     def play(self, current_type_index):
         print("A bot is gonna play! " + self.name)
-        return [self.hand.pop_card()]
+        return [0]
 
 
 class Deck(Cards):
     def __init__(self, suits, types):
-        Cards.__init__(self, suits, types)
+        Cards.__init__(self)
+        self.suits = suits
+        self.types = types
 
         for i in range(len(self.types)):
             for suit in self.suits:
@@ -120,7 +257,7 @@ class Game:
         self.types = types
         self.players = []
         self.num_players = 0
-        self.pool = []
+        self.pool = Cards()
         self.current_type_index = 0
         self.max_card_value = len(types) - 1
         self.player_index_to_play = 0
@@ -197,7 +334,7 @@ class Game:
         return self.get_player(player_index_to_play)
 
     def pool_size(self):
-        return len(self.pool)
+        return self.pool.num_cards()
 
     def round(self):
         cur_player = self.get_player(self.player_index_to_play)
@@ -217,7 +354,11 @@ class Game:
         print(str(self.pool_size()))
 
         cards_placed = cur_player.play(cur_type)
-        self.pool.extend(cards_placed)
+
+        # add cards to pool
+        for i in cards_placed:
+            self.pool.add_card(cur_player.get_hand().get_card(int(i)))
+        cur_player.get_hand().filter_cards(cards_placed)
 
         # determine next player, next type to play
         self.current_type_index += 1
