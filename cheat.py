@@ -250,50 +250,62 @@ class Deck(Cards):
 
 
 class Game:
-    def __init__(self, suits, types):
+    def __init__(
+        self, suits, types, Simulate=False, num_players=0, min_p=3, max_p=8
+    ):
         self.suits = suits
         self.types = types
         self.players = []
-        self.num_players = 0
+        self.min_players = min_p
+        self.max_players = max_p
+        self.num_players = num_players
         self.pool = Cards()
         self.current_type_index = 0
         self.max_card_value = len(types) - 1
         self.player_index_to_play = 0
+        self.player_id = -1  # the Human player
+
         name = ""
-
         while True:
-            try:
-                self.num_players = int(input(
-                    "Enter number of AI players. (min 2, max 7)\n> "
-                ))
-            except ValueError:
-                print("Must be an integer.")
-                continue
+            if num_players == 0:
+                inp_msg = (
+                    "Enter number of players. "
+                    "(min " + str(self.min_players) + ", max " +
+                    str(self.max_players) + ")\n> "
+                )
+                try:
+                    self.num_players = int(input(inp_msg))
+                except ValueError:
+                    print("Must be an integer.")
+                    continue
 
-            if not 2 <= self.num_players <= 8:
-                print("min 2, max 7")
-                continue
-            else:
-                self.num_players += 1
-                break
+                if not (
+                    self.min_players <= self.num_players <= self.max_players
+                ):
+                    print(
+                        "min " + str(self.min_players) + ", max " +
+                        str(self.max_players)
+                    )
+                    continue
+                else:
+                    break
 
         # get player name
-        while True:
-            try:
-                name = str(input("Enter your name!\n> "))
-            except ValueError:
-                print("Must be a string.")
-                continue
+        if not Simulate:
+            while True:
+                try:
+                    name = str(input("Enter your name!\n> "))
+                except ValueError:
+                    print("Must be a string.")
+                    continue
 
-            if name == "":
-                print("Enter a name.")
-                continue
-            else:
-                break
+                if name == "":
+                    print("Enter a name.")
+                    continue
+                else:
+                    break
 
-        if name == "no lol":
-            self.player_id = -1
-        else:
+            # assign player random turn number
             self.player_id = random.randint(0, self.num_players - 1)
 
         for i in range(self.num_players):
@@ -370,7 +382,6 @@ class Game:
         print("Pool size:")
         print(str(self.pool_size()))
 
-
     def play_game(self):
         self.deal()
         while(True):
@@ -385,5 +396,5 @@ types = [
     "King"
 ]
 
-g = Game(suits, types)
+g = Game(suits, types, True)
 g.play_game()
