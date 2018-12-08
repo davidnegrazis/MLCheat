@@ -110,7 +110,7 @@ class Game:
         if self.show_outputs:
             self.display_round_info(cur_player, cur_type)
 
-        cards_placed = cur_player.play(cur_type)
+        cards_placed = cur_player.play(cur_type, len(self.suits))
         num_placed = len(cards_placed)
 
         if self.show_outputs:

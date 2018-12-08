@@ -36,7 +36,7 @@ class Player:
     def num_cards(self):
         return self.hand.num_cards()
 
-    def play(self, current_type_index):
+    def play(self, current_type_index, max_size=4):
         pass
 
     # returns bool for decision
@@ -48,7 +48,7 @@ class Human(Player):
     def __init__(self, name, id, suits, types):
         Player.__init__(self, name, id, suits, types)
 
-    def play(self, current_type_index):
+    def play(self, current_type_index, max_size=4):
         cmd = ""
         queue = []
 
@@ -124,6 +124,12 @@ class Human(Player):
             if not valid_cmd:
                 continue
 
+            if len(cmd) + len(queue) > max_size:
+                print(
+                    "You can't play more than " + str(max_size) +
+                    " cards at a time"
+                )
+
             cmd = [int(x) for x in cmd]
             queue.extend(cmd)
 
@@ -169,8 +175,8 @@ class Bot(Player):
     def __init__(self, name, id, suits, types):
         Player.__init__(self, name, id, suits, types)
 
-    def play(self, current_type_index):
-        return random.choice(self.hand.get_combos(4, True))
+    def play(self, current_type_index, max_size=4):
+        return random.choice(self.hand.get_combos(max_size, True))
 
     def call_cheat(self, current_type_index, pool_size):
         return random.choice([True, False])
