@@ -65,7 +65,7 @@ class Game:
             # assign player random turn number
             self.player_id = random.randint(0, self.num_players - 1)
 
-        for i in range(0, self.num_players + 1):
+        for i in range(0, self.num_players):
             if i == self.player_id:
                 self.players.append(Human(
                     name, i, self.suits, self.types
@@ -259,6 +259,12 @@ class Game:
             self.player_index_to_play = next_player_index
 
             if self.player_index_to_play == -1:
+                for i in [
+                    x for x in range(0, self.num_players)
+                    if x not in self.winners
+                ]:
+                    self.winners.append(i)
+
                 break
 
         if self.show_outputs:
