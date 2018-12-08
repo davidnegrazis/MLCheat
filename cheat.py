@@ -228,7 +228,10 @@ class Human(Player):
                         else:
                             return queue
                     elif special == "undo":
-                        queue.pop()
+                        if len(queue) > 0:
+                            queue.pop()
+                        else:
+                            print("Nothing to undo")
 
                     valid_cmd = False
                     break
@@ -568,5 +571,5 @@ types = [
     "King"
 ]
 
-g = Game(suits, types, True, False, 5)
+g = Game(suits, types)
 g.play_game()
