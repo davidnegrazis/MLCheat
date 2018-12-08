@@ -65,7 +65,7 @@ class Game:
             # assign player random turn number
             self.player_id = random.randint(0, self.num_players - 1)
 
-        for i in range(self.num_players):
+        for i in range(0, self.num_players + 1):
             if i == self.player_id:
                 self.players.append(Human(
                     name, i, self.suits, self.types
@@ -88,7 +88,7 @@ class Game:
         self.deck.__shuffle__()
 
         for i in range(self.deck.num_cards()):
-            if players_index > self.num_players - 1:
+            if players_index == self.num_players:
                 players_index = 0
 
             self.players[players_index].add_card_to_hand(self.deck.pop_card())
