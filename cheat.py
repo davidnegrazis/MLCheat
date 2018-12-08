@@ -19,6 +19,9 @@ class Card:
     def __str__(self):
         return self.type + " of " + self.suit + "s"
 
+    def __lt__(self, other):
+        return self.value < other.value
+
     def get_type(self):
         return self.type
 
@@ -26,6 +29,9 @@ class Card:
 class Cards:
     def __init__(self):
         self.cards = []
+
+    def sort_cards(self):
+        self.cards.sort()
 
     def add_card(self, Card):
         self.cards.append(Card)
@@ -195,7 +201,7 @@ class Human(Player):
 
             # verify input
             valid_cmd = True
-            special_cmds = ["clear", "undo", "done"]
+            special_cmds = ["clear", "undo", "done", "sort"]
             for p in cmd:
                 if not (p in special_cmds and len(cmd) == 1):
                     if not represents_int(p):
@@ -232,6 +238,8 @@ class Human(Player):
                             queue.pop()
                         else:
                             print("Nothing to undo")
+                    elif special == "sort":
+                        self.hand.sort_cards()
 
                     valid_cmd = False
                     break
@@ -250,7 +258,7 @@ class Human(Player):
             "comma"
         )
         print("~~~")
-        print("To call cheat, enter -1")
+        print("To sort cards, enter 'sort'")
         print("~~~")
         print("To undo most recent card placement, enter 'undo'")
         print("~~~")
@@ -260,21 +268,24 @@ class Human(Player):
     def call_cheat(self, current_type_index, pool_size=None):
         inp = ""
         while(True):
-            inp = input("Call cheat? (y / n / s / ?) > ")
+            inp = input("Call cheat? (y / n / h / s / ?) > ")
             if inp == "y":
                 return True
             elif inp == "n":
                 return False
+            elif inp == "h":
+                self.hand.show_cards()
             elif inp == "s":
+                self.hand.sort_cards()
                 self.hand.show_cards()
             elif inp == "?":
-                print("y: call cheat\nn: continue\ns: see my hand")
+                print("y: call cheat\nn: continue\nh: see hand\ns: sort hand")
                 print(
                     "(calling cheat accuses the player of placing at least " +
                     "one card that doesn't match the current type)"
                 )
             else:
-                print("Options: y / n / s / ?")
+                print("Options: y / n / h / s / ?")
 
 
 class Bot(Player):
@@ -296,7 +307,7 @@ class Deck(Cards):
 
         for i in range(len(self.types)):
             for suit in self.suits:
-                self.add_card(Card(suit, self.types[i], i + 1))
+                self.add_card(Card(suit, self.types[i], i))
 
 
 class Game:
