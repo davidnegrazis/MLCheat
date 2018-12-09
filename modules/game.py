@@ -147,6 +147,41 @@ class Game:
 
         return self.next_player(start, cur)
 
+    def display_num_player_cards(self, per_line=4):
+        to_show = []
+        for i in [
+            x for x in range(0, self.num_players) if x not in self.winners
+        ]:
+            to_show.append(i)
+
+        length = len(to_show)
+        if length > 0:
+            data = []
+            row = []
+            last_i = to_show[-1]
+
+            counter = 0
+            for i in to_show:
+                string = ""
+                p = self.players[i].get_name() + ": "
+                c = str(self.players[i].num_cards())
+
+                string += p + c
+                row.append(string)
+
+                if counter == per_line - 1:
+                    data.append(row)
+                    row = []
+                    counter = 0
+                else:
+                    counter += 1
+                    if i == last_i:
+                        data.append(row)
+
+            col_width = max(len(word) for row in data for word in row) + 2
+            for row in data:
+                print("".join(word.ljust(col_width) for word in row))
+
     def display_round_info(self, cur_player, cur_type):
         print("\n")
         for i in range(0, 30):
@@ -164,6 +199,10 @@ class Game:
         print("---")
         print("Pool size:")
         print(str(self.pool_size()))
+
+        print("---")
+        print("Hand sizes:")
+        self.display_num_player_cards()
 
         for i in range(0, 30):
             print("#", end="")
