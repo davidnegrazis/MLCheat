@@ -208,81 +208,84 @@ class Game:
             print("#", end="")
         print("")
 
+    def do_accusations(self, num_placed):
+        accusers = []
+        c = 0
+        for P in self.players:
+            if (
+                c not in self.winners and
+                not c == self.player_index_to_play
+            ):
+                if P.call_cheat(self.current_type_index, self.pool_size()):
+                    accusers.append(c)
+
+            c += 1
+
+        if len(accusers) > 0:
+            accuser = accusers[0]
+            receiver = accuser
+
+            if self.show_outputs:
+                print("\n^^^^")
+                print(
+                    self.get_player(accuser).get_name() +
+                    " called cheat on " +
+                    self.current_player_to_play().get_name()
+                )
+                print("^^^^\n")
+
+            # check last num_placed cards to see if they were valid
+            cheated = False
+            for i in range(
+                self.pool_size() - num_placed, self.pool_size()
+            ):
+                if not (self.pool.get_card(i).get_type() ==
+                        self.current_type_to_play()):
+                    cheated = True
+                    receiver = self.player_index_to_play
+                    break
+
+            P = None
+            msg = ""
+            if cheated:
+                P = self.current_player_to_play()
+                msg += P.get_name() + " cheated!"
+            else:
+                P = self.get_player(accuser)
+                msg += (
+                    P.get_name() + " incorrectly accused " +
+                    self.current_player_to_play().get_name()
+                )
+
+            if self.show_outputs:
+                print(msg)
+                print("Here were the placed cards:")
+                # show the placed cards
+                self.pool.show_cards(
+                    False,
+                    None,
+                    list(range(
+                        self.pool_size() - num_placed,
+                        self.pool_size())
+                    )
+                )
+
+                print(
+                    self.get_player(receiver).get_name() +
+                    " has to pick up all " + str(self.pool_size()) +
+                    " cards from the pool!"
+                )
+
+                P.give_cards(self.pool)
+                self.pool.clear()
+
     def play_game(self):
         self.deal()
         while(True):
             num_placed = self.round()
 
             # check cheat
-            accusers = []
-            c = 0
-            for P in self.players:
-                if (
-                    c not in self.winners and
-                    not c == self.player_index_to_play
-                ):
-                    if P.call_cheat(self.current_type_index, self.pool_size()):
-                        accusers.append(c)
-
-                c += 1
-
-            if len(accusers) > 0:
-                accuser = accusers[0]
-                receiver = accuser
-
-                if self.show_outputs:
-                    print("\n^^^^")
-                    print(
-                        self.get_player(accuser).get_name() +
-                        " called cheat on " +
-                        self.current_player_to_play().get_name()
-                    )
-                    print("^^^^\n")
-
-                # check last num_placed cards to see if they were valid
-                cheated = False
-                for i in range(
-                    self.pool_size() - num_placed, self.pool_size()
-                ):
-                    if not (self.pool.get_card(i).get_type() ==
-                            self.current_type_to_play()):
-                        cheated = True
-                        receiver = self.player_index_to_play
-                        break
-
-                P = None
-                msg = ""
-                if cheated:
-                    P = self.current_player_to_play()
-                    msg += P.get_name() + " cheated!"
-                else:
-                    P = self.get_player(accuser)
-                    msg += (
-                        P.get_name() + " incorrectly accused " +
-                        self.current_player_to_play().get_name()
-                    )
-
-                if self.show_outputs:
-                    print(msg)
-                    print("Here were the placed cards:")
-                    # show the placed cards
-                    self.pool.show_cards(
-                        False,
-                        None,
-                        list(range(
-                            self.pool_size() - num_placed,
-                            self.pool_size())
-                        )
-                    )
-
-                    print(
-                        self.get_player(receiver).get_name() +
-                        " has to pick up all " + str(self.pool_size()) +
-                        " cards from the pool!"
-                    )
-
-                P.give_cards(self.pool)
-                self.pool.clear()
+            self.do_accusations(num_placed)
 
             # if player has no more cards, add them to winners list
             if self.current_player_to_play().num_cards() == 0:
