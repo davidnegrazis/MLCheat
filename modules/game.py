@@ -107,11 +107,14 @@ class Game:
         cur_player = self.current_player_to_play()
         cur_type = self.current_type_to_play()
 
-        if self.show_outputs:
+        if self.player_index_to_play == self.player_id and self.show_outputs:
             self.display_round_info(cur_player, cur_type)
 
         cards_placed = cur_player.play(cur_type, len(self.suits))
         num_placed = len(cards_placed)
+
+        if self.player_index_to_play != self.player_id and self.show_outputs:
+            self.display_round_info(cur_player, cur_type, num_placed)
 
         if self.show_outputs:
             print("\n~~~~~")
@@ -147,7 +150,7 @@ class Game:
 
         return self.next_player(start, cur)
 
-    def display_num_player_cards(self, per_line=4):
+    def display_num_player_cards(self, num_placed=0, per_line=4):
         to_show = []
         for i in [
             x for x in range(0, self.num_players) if x not in self.winners
@@ -165,6 +168,8 @@ class Game:
                 string = ""
                 p = self.players[i].get_name() + ": "
                 c = str(self.players[i].num_cards())
+                if num_placed > 0 and i == self.player_index_to_play:
+                    c += " -> " + str(self.players[i].num_cards() - num_placed)
 
                 string += p + c
                 row.append(string)
@@ -182,7 +187,7 @@ class Game:
             for row in data:
                 print("".join(word.ljust(col_width) for word in row))
 
-    def display_round_info(self, cur_player, cur_type):
+    def display_round_info(self, cur_player, cur_type, num_placed=0):
         print("\n")
         for i in range(0, 30):
             print("#", end="")
@@ -198,11 +203,13 @@ class Game:
 
         print("---")
         print("Pool size:")
-        print(str(self.pool_size()))
+        if num_placed > 0:
+            print(str(self.pool_size()) + " -> ", end="")
+        print(str(self.pool_size() + num_placed))
 
         print("---")
         print("Hand sizes:")
-        self.display_num_player_cards()
+        self.display_num_player_cards(num_placed)
 
         for i in range(0, 30):
             print("#", end="")
