@@ -1,5 +1,6 @@
 import random
 import itertools
+from colours import bcolours
 
 
 class Card:
@@ -101,7 +102,9 @@ class Cards:
                 string = ""
 
                 if show_indices:
-                    string += "[" + str(i) + "] "
+                    string += (
+                        bcolours().BOLD + "[" + str(i) + "] " + bcolours().ENDC
+                    )
 
                 string += self.get_card_string(i)
                 row.append(string)

@@ -1,5 +1,6 @@
 import random
 from cards import Hand
+from colours import bcolours
 
 
 def represents_int(s):
@@ -55,13 +56,14 @@ class Human(Player):
         while True:
             print("--- Available cards to play ---")
             self.hand.show_cards(True, queue)
-            print("--- My selection ---")
+            print("\n--- My selection ---")
             self.hand.show_cards(False, None, queue)
             print("--------------------")
 
             cmd = input("Enter a command or type ? for help\n> ")
 
             if (cmd == "?"):
+                print("")
                 self.show_instructions()
                 continue
 
@@ -134,6 +136,7 @@ class Human(Player):
             queue.extend(cmd)
 
     def show_instructions(self):
+        print(bcolours().OKGREEN, end="")
         print("--- Commands ---")
         print("To select a card, enter the number you see before it")
         print(
@@ -147,6 +150,7 @@ class Human(Player):
         print("~~~")
         print("To clear selection, enter 'clear'")
         print("----------------")
+        print(bcolours().ENDC, end="")
 
     def call_cheat(self, current_type_index, pool_size=None):
         inp = ""

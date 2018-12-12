@@ -1,6 +1,7 @@
 import random
 from cards import Cards, Deck
 from player import Human, Bot
+from colours import bcolours
 
 
 class Game:
@@ -117,6 +118,7 @@ class Game:
             self.display_round_info(cur_player, cur_type, num_placed)
 
         if self.show_outputs:
+            print(bcolours().BOLD, end="")
             print("\n~~~~~")
             print(
                 cur_player.get_name() + " placed " + str(num_placed) +
@@ -127,6 +129,7 @@ class Game:
                 " cards"
             )
             print("~~~~~\n")
+            print(bcolours().ENDC, end="")
 
         # add cards to pool
         for i in cards_placed:
@@ -165,13 +168,17 @@ class Game:
 
             counter = 0
             for i in to_show:
-                string = ""
                 p = self.players[i].get_name() + ": "
                 c = str(self.players[i].num_cards())
                 if num_placed > 0 and i == self.player_index_to_play:
                     c += " -> " + str(self.players[i].num_cards() - num_placed)
 
-                string += p + c
+                string = "{ " + p + c + " }"
+                if i == self.player_index_to_play:
+                    string = bcolours().WARNING + string + bcolours().ENDC
+                else:
+                    string = bcolours().TEST + string + bcolours().ENDC
+
                 row.append(string)
 
                 if counter == per_line - 1:
@@ -183,36 +190,42 @@ class Game:
                     if i == last_i:
                         data.append(row)
 
-            col_width = max(len(word) for row in data for word in row) + 2
-            for row in data:
-                print("".join(word.ljust(col_width) for word in row))
+            if sum(len(x) for x in data) > per_line:
+                col_width = max(len(word) for row in data for word in row) + 2
+                for row in data:
+                    print("".join(word.ljust(col_width) for word in row))
+            else:
+                for row in data:
+                    for word in row:
+                        print(word)
 
     def display_round_info(self, cur_player, cur_type, num_placed=0):
-        print("\n")
+        surrounder = ""
         for i in range(0, 30):
-            print("#", end="")
+            surrounder += "#"
+        surrounder = bcolours().FAIL + surrounder + bcolours().ENDC
+
         print("")
+        print(surrounder)
         print("Current card type to play:")
-        print(cur_type)
+        print(bcolours().BOLD + cur_type + bcolours().ENDC)
         print("---")
         print("Player to place cards:")
-        print(cur_player.get_name())
-
-        if cur_player == self.player_id:
-            print("(It's your turn.)")
+        print(bcolours().BOLD + cur_player.get_name() + bcolours().ENDC)
 
         print("---")
         print("Pool size:")
+        print(bcolours().BOLD, end="")
         if num_placed > 0:
             print(str(self.pool_size()) + " -> ", end="")
         print(str(self.pool_size() + num_placed))
+        print(bcolours().ENDC, end="")
 
         print("---")
         print("Hand sizes:")
         self.display_num_player_cards(num_placed)
 
-        for i in range(0, 30):
-            print("#", end="")
+        print(surrounder)
         print("")
 
     def do_accusations(self, num_placed):
@@ -233,6 +246,7 @@ class Game:
             receiver = accuser
 
             if self.show_outputs:
+                print(bcolours().OKBLUE, end="")
                 print("\n^^^^")
                 print(
                     self.get_player(accuser).get_name() +
@@ -240,6 +254,7 @@ class Game:
                     self.current_player_to_play().get_name()
                 )
                 print("^^^^\n")
+                print(bcolours().ENDC, end="")
 
             # check last num_placed cards to see if they were valid
             cheated = False
@@ -265,9 +280,11 @@ class Game:
                 )
 
             if self.show_outputs:
+                print(bcolours().BOLD, end="")
                 print(msg)
                 print("Here were the placed cards:")
                 # show the placed cards
+                print(bcolours().OKBLUE)
                 self.pool.show_cards(
                     False,
                     None,
@@ -276,12 +293,14 @@ class Game:
                         self.pool_size())
                     )
                 )
-
+                print(bcolours().ENDC, end="")
+                print(bcolours().BOLD)
                 print(
                     self.get_player(receiver).get_name() +
                     " has to pick up all " + str(self.pool_size()) +
-                    " cards from the pool!"
+                    " cards from the pool!\n"
                 )
+                print(bcolours().ENDC, end="")
 
                 P.give_cards(self.pool)
                 self.pool.clear()
@@ -317,8 +336,10 @@ class Game:
                 break
 
         if self.show_outputs:
+            print(bcolours().OKGREEN, end="")
             print("\n\n~~~ Winners ~~~")
             c = 1
             for i in self.winners:
                 print(str(c) + "  " + self.get_player(i).get_name())
                 c += 1
+            print(bcolours().ENDC, end="")
